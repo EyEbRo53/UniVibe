@@ -1,0 +1,110 @@
+
+Lat Long (31.484643, 74.301241)
+
+CREATE TABLE User (
+  user_id INT PRIMARY KEY IDENTITY AUTO INCREMENT,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NULL,
+  user_name VARCHAR(255) NOT NULL UNIQUE,
+  profile_pic_url VARCHAR(255),
+  oauth_provider VARCHAR(50),
+  oauth_id VARCHAR(255),
+  created_at DATETIME DEFAULT GETDATE() NOT NULL
+);
+
+CREATE TABLE UserContacts (
+  contact_id INT PRIMARY KEY IDENTITY,
+  user_id INT FOREIGN KEY REFERENCES Users(user_id) ON DELETE CASCADE,
+  contact_type VARCHAR(50) NOT NULL,
+  contact_value VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE Interests (
+  interest_id INT PRIMARY KEY IDENTITY,
+  user_id INT FOREIGN KEY REFERENCES Users(user_id) NOT NULL,
+  activity_type_id INT FOREIGN KEY REFERENCES ActivityType(activity_type_id) NOT NULL,
+  UNIQUE(user_id, activity_type_id)
+);
+
+CREATE TABLE ActivityType (
+  activity_type_id INT PRIMARY KEY IDENTITY,
+  type_name VARCHAR(255) UNIQUE NOT NULL
+);
+
+CREATE TABLE Posts (
+  post_id INT PRIMARY KEY IDENTITY,
+  user_id INT FOREIGN KEY REFERENCES Users(user_id) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  location VARCHAR(255),
+  activity_type_id INT FOREIGN KEY REFERENCES ActivityType(activity_type_id) NOT NULL,
+  created_at DATETIME DEFAULT GETDATE() NOT NULL,
+  expires_at DATETIME NOT NULL
+);
+
+CREATE TABLE PostImages (
+  image_id INT PRIMARY KEY IDENTITY,
+  post_id INT FOREIGN KEY REFERENCES Posts(post_id) ON DELETE CASCADE NOT NULL,
+  image_url VARCHAR(255) NOT NULL,
+  uploaded_at DATETIME DEFAULT GETDATE() NOT NULL
+);
+
+CREATE TABLE Ratings (
+  rating_id INT PRIMARY KEY IDENTITY,
+  reviewer_user_id INT FOREIGN KEY REFERENCES Users(user_id) NOT NULL,
+  reviewed_user_id INT FOREIGN KEY REFERENCES Users(user_id) NOT NULL,
+  rating INT CHECK (rating BETWEEN 1 AND 5) NOT NULL,
+  created_at DATETIME DEFAULT GETDATE() NOT NULL,
+  CHECK (reviewer_id <> reviewed_user_id)
+);
+
+CREATE TABLE Groups (
+  group_id INT PRIMARY KEY IDENTITY,
+  group_name VARCHAR(255) NOT NULL,
+  description TEXT,
+  activity_type_id INT FOREIGN KEY REFERENCES ActivityType(activity_type_id),
+  created_at DATETIME DEFAULT GETDATE(),
+  owner_id INT FOREIGN KEY REFERENCES Users(user_id) NOT NULL
+);
+
+CREATE TABLE GroupMembership (
+  group_id INT FOREIGN KEY REFERENCES Groups(group_id) ON DELETE CASCADE,
+  user_id INT FOREIGN KEY REFERENCES Users(user_id) ON DELETE CASCADE,
+  joined_at DATETIME DEFAULT GETDATE(),
+  role VARCHAR(50) CHECK (role IN ('admin', 'member')),
+  PRIMARY KEY (group_id, user_id)
+);
+
+CREATE TABLE Messages (
+  message_id INT PRIMARY KEY IDENTITY,
+  sender_id INT FOREIGN KEY REFERENCES Users(user_id) NOT NULL,
+  receiver_id INT FOREIGN KEY REFERENCES Users(user_id) NOT NULL,
+  content TEXT NOT NULL,
+  sent_at DATETIME DEFAULT GETDATE() NOT NULL,
+  expires_at DATETIME NOT NULL
+);
+
+CREATE TABLE Notifications (
+  notification_id INT PRIMARY KEY IDENTITY,
+  user_id INT FOREIGN KEY REFERENCES Users(user_id) NOT NULL,
+  post_id INT FOREIGN KEY REFERENCES Posts(post_id),
+  type VARCHAR(50) NOT NULL,
+  created_at DATETIME DEFAULT GETDATE() NOT NULL,
+  is_read BIT DEFAULT 0
+);
+
+CREATE TABLE Reviews (
+  review_id INT PRIMARY KEY IDENTITY,
+  reviewer_id INT FOREIGN KEY REFERENCES Users(user_id) NOT NULL,
+  reviewed_user_id INT FOREIGN KEY REFERENCES Users(user_id) NOT NULL,
+  content TEXT NOT NULL,
+  created_at DATETIME DEFAULT GETDATE() NOT NULL
+);
+
+//removed this
+CREATE TABLE UserPreferences (
+  user_id INT PRIMARY KEY FOREIGN KEY REFERENCES Users(user_id) ON DELETE CASCADE,
+  theme enum('dark', 'light')
+  notification_setting VARCHAR(50) CHECK (notification_setting IN ('all', 'mentions', 'none')),
+  updated_at DATETIME DEFAULT GETDATE()
+);

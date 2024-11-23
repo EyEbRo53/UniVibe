@@ -1,0 +1,25 @@
+const socket = io('http://localhost:3000'); // Replace with your server URL
+
+// When the socket connects
+socket.on('connect', () => {
+  console.log(`Connected with socket ID: ${socket.id}`);
+});
+
+// Handle receiving a message
+socket.on('receive_message', (message) => {
+  console.log('Received message:', message);
+  // Handle updating the UI with the received message
+});
+
+// Handle successful message sent
+socket.on('message_sent', (data) => {
+  console.log(data.status); // Output: "Message sent successfully"
+});
+
+// Join room (after user login or identification)
+socket.emit('join', userId);
+
+// Send a message
+const sendMessage = (senderId, receiverId, content) => {
+  socket.emit('send_message', { senderId, receiverId, content });
+};
