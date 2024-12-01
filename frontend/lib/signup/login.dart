@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/apiFolder/api_service.dart';
-import 'package:frontend/appPages/homepage.dart';
-import 'package:frontend/appPages/pagecard.dart';
+import 'package:frontend/appPages/page_card.dart';
 import 'package:frontend/signup/signup.dart';
 import 'package:frontend/storage/authentication.dart';
 import 'package:frontend/utils/utility.dart';
@@ -20,54 +19,46 @@ class _LoginPageState extends State<LoginPage> {
   String _errorMessage = "";
 
   bool _isEmailValid(String email) {
-    // A basic email pattern, can be more strict if needed
     final RegExp emailRegExp = RegExp(
       r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
     );
     return emailRegExp.hasMatch(email);
   }
 
-  Future<void> _intiateLogin() async {
+  Future<void> _initiateLogin() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
-
-    // Print email and password before validation for debugging
-    print('Attempting login with email: $email and password: $password');
 
     if (email.isEmpty) {
       _errorMessage =
           password.isEmpty ? "Email and Password are Empty" : "Email is Empty";
-      print('Error: $_errorMessage');
       setState(() {});
       return;
     }
 
     if (!_isEmailValid(email)) {
       _errorMessage = "Email is in invalid format";
-      print('Error: $_errorMessage');
       setState(() {});
       return;
     }
 
     if (password.isEmpty) {
       _errorMessage = "Password is Empty";
-      print('Error: $_errorMessage');
       setState(() {});
       return;
     }
 
-    // Log the start of the API call
-    print('Calling API to login...');
-
     ApiService apiService = ApiService("http://localhost:3000");
     try {
       var responseBody = await apiService.login(email, password);
-      print(
-          'Login successful. Response body: $responseBody'); // Log successful login
+
+      if (!mounted) return;
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       authProvider.setToken(responseBody["access_token"]);
+
       _errorMessage = "";
+
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -75,8 +66,6 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
     } catch (exception) {
-      // Log error in case of failure
-      print('Login failed. Error: $exception');
       _errorMessage = Utils.getReadableErrorMessage(exception.toString());
     }
     setState(() {});
@@ -161,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(
                   width: 100,
                   child: TextButton(
-                    onPressed: _intiateLogin,
+                    onPressed: _initiateLogin,
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.black,
                       foregroundColor: Colors.white,

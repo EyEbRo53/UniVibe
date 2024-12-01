@@ -1,7 +1,11 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:frontend/apiFolder/api_service.dart';
+import 'package:frontend/storage/authentication.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:path/path.dart';
+import 'package:provider/provider.dart';
 
 //  @Post('create')
 //   @UseGuards(JwtAuthGuard)
@@ -23,14 +27,14 @@ class ImageService {
   Future<dynamic> uploadImage(String imageUrls, String jwtToken) async {
     ApiService apiService = ApiService(baseUrl);
 
-    // Login and get JWT token
-    final responseLogin = await apiService.login("abdurrehman4415@gmail.com", "a12345678");
+    final authProvider =
+        Provider.of<AuthProvider>(context as BuildContext, listen: false);
 
-    jwtToken = "Bearer ${responseLogin['access_token']}";
+    jwtToken = authProvider.token;
 
-    // Creating appropriate test data based on the conditions
     const String title = 'A Valid Title';
-    const String description = 'This is a valid description. quirement necessary length for a valid description that will pass the validation check that requires it to be between 100 and 1000 characters.';
+    const String description =
+        'This is a valid description. quirement necessary length for a valid description that will pass the validation check that requires it to be between 100 and 1000 characters.';
     const String location = 'Cafe';
 
     // Prepare payload
@@ -39,7 +43,7 @@ class ImageService {
       'description': description,
       'location': location,
       'activityTypeId': 3,
-      'imageUrls': [imageUrls,imageUrls],
+      'imageUrls': [imageUrls, imageUrls],
     };
 
     Uri uri = Uri.parse("$baseUrl/posts/create");

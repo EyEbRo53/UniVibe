@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:frontend/apiFolder/post_api_service.dart';
-import 'package:frontend/models/posts.dart';
-import 'package:frontend/utils/utility.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -12,6 +9,7 @@ class Homepage extends StatefulWidget {
   @override
   State<Homepage> createState() => _HomepageState();
 }
+
 class _HomepageState extends State<Homepage> {
   Future<List<dynamic>>? _futurePosts;
 
@@ -24,7 +22,7 @@ class _HomepageState extends State<Homepage> {
   Future<List<dynamic>> getAllPosts() async {
     PostApiService postApiService = PostApiService("http://localhost:3000");
     try {
-      var postResponse =jsonDecode(await postApiService.getAllPosts());
+      var postResponse = jsonDecode(await postApiService.getAllPosts());
       return postResponse['data']; // Return the list of posts.
     } catch (e) {
       print("Could not get posts: $e");
@@ -55,8 +53,8 @@ class _HomepageState extends State<Homepage> {
                 return FractionallySizedBox(
                   widthFactor: screenWidth < widthThreshold ? 0.9 : 0.8,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 20),
                     child: SizedBox(
                       child: Card(
                         child: Container(
@@ -103,7 +101,8 @@ class _HomepageState extends State<Homepage> {
                                 height: 8,
                               ),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
                                 children: [
                                   HoverButton(
                                     text: "Send Message",
@@ -147,7 +146,7 @@ class _HomepageState extends State<Homepage> {
 
 class PageViewSlider extends StatefulWidget {
   final List<dynamic> images;
- PageViewSlider({super.key, required this.images});
+  PageViewSlider({super.key, required this.images});
 
   @override
   State<PageViewSlider> createState() => _PageViewSliderState();
@@ -158,57 +157,57 @@ class _PageViewSliderState extends State<PageViewSlider> {
 
   final double threshold1000 = 1000.0;
   final double threshold350 = 350.0;
-  @override 
-Widget build(BuildContext context) {
-  if (widget.images.isEmpty) {
-    return const Center(child: Text('No images available'));
+  @override
+  Widget build(BuildContext context) {
+    if (widget.images.isEmpty) {
+      return const Center(child: Text('No images available'));
+    }
+    double screenWidth = MediaQuery.of(context).size.width;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 30,
+          child: IconButton(
+            onPressed: () {
+              _pageController.previousPage(
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.bounceIn,
+              );
+            },
+            icon: const Icon(Icons.arrow_back_ios),
+          ),
+        ),
+        Container(
+          color: Colors.black,
+          height: 250, //300
+          width: screenWidth < threshold1000 ? 260 : 300,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.images.length,
+            itemBuilder: (context, index) {
+              return Image.memory(
+                base64Decode(widget.images[index]["image_url"]),
+                fit: BoxFit.fitHeight,
+              );
+            },
+          ),
+        ),
+        SizedBox(
+          width: 30,
+          child: IconButton(
+            onPressed: () {
+              _pageController.nextPage(
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.bounceIn,
+              );
+            },
+            icon: const Icon(Icons.arrow_forward_ios),
+          ),
+        ),
+      ],
+    );
   }
-  double screenWidth = MediaQuery.of(context).size.width;
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      SizedBox(
-        width: 30,
-        child: IconButton(
-          onPressed: () {
-            _pageController.previousPage(
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.bounceIn,
-            );
-          },
-          icon: const Icon(Icons.arrow_back_ios),
-        ),
-      ),
-      Container(
-        color: Colors.black,
-        height: 250, //300
-        width: screenWidth < threshold1000? 260 : 300 ,
-        child: PageView.builder(
-          controller: _pageController,
-          itemCount: widget.images.length,
-          itemBuilder: (context, index) {
-            return Image.memory(
-              base64Decode(widget.images[index]["image_url"]),
-              fit: BoxFit.fitHeight,
-            );
-          },
-        ),
-      ),
-      SizedBox(
-        width: 30,
-        child: IconButton(
-          onPressed: () {
-            _pageController.nextPage(
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.bounceIn,
-            );
-          },
-          icon: const Icon(Icons.arrow_forward_ios),
-        ),
-      ),
-    ],
-  );
-}
 }
 
 class HoverButton extends StatefulWidget {
@@ -237,11 +236,10 @@ class _HoverButtonState extends State<HoverButton> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      cursor: SystemMouseCursors.click, 
+      cursor: SystemMouseCursors.click,
       onEnter: (_) {
         setState(() {
           isHovered = true;
-          
         });
       },
       onExit: (_) {

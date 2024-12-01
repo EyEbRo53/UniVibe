@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:frontend/storage/authentication.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 
 class ApiService {
   final String baseUrl;
@@ -12,7 +14,6 @@ class ApiService {
   Future<dynamic> login(String email, String password) async {
     Uri url = Uri.parse("$baseUrl/auth/login");
 
-    // Print the URL and the body of the request
     print('Sending POST request to: $url');
     print(
         'Request body: ${jsonEncode({'email': email, 'password': password})}');
@@ -24,7 +25,6 @@ class ApiService {
         headers: base_headers,
       );
 
-      // Log the status code of the response
       print('Response status code: ${response.statusCode}');
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -66,10 +66,9 @@ class ApiService {
     Uri url = Uri.parse("http://localhost:3000/users/verify-code");
     try {
       final Response response = await http.post(
-        url, body: jsonEncode({'email': email, 'code': enteredCode}),
-        headers: {
-          'Content-Type': 'application/json'
-        }, // Set content type for JSON
+        url,
+        body: jsonEncode({'email': email, 'code': enteredCode}),
+        headers: {'Content-Type': 'application/json'},
       );
       var responseBody = jsonDecode(response.body);
       if (responseBody['message'] != null) {
@@ -84,15 +83,10 @@ class ApiService {
 
   Future<dynamic> addUserContacts(BuildContext context,
       List<String> contactTypes, List<String> contactValues) async {
-    final responseLogin = await login("abdurrehman4415@gmail.com", "a12345678");
+    final authProvider =
+        Provider.of<AuthProvider>(context as BuildContext, listen: false);
+    String jwtToken = authProvider.token;
 
-    final jwtToken = "Bearer ${responseLogin['access_token']}";
-    //final jwtToken = Provider.of<AuthProvider>(context, listen: false).token;
-    // const token =
-    //     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJlbWFpbCI6ImFiZHVycmVobWFuNDQxNUBnbWFpbC5jb20iLCJpYXQiOjE3MzAwNTg0NDh9.qoOUEazuDozg2oaMOsg02DXTHop1w8nzsm4pZr-Reyg";
-    // const jwtToken = "Bearer 3219371298371";
-
-    // print(jwtToken);
     final Uri url = Uri.parse("$baseUrl/contacts");
 
     int counter = contactTypes.length;
