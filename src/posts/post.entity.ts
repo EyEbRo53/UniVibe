@@ -39,8 +39,8 @@ export class Post {
   @OneToMany(() => PostImage, (postImage) => postImage.post, { cascade: true })
   images: PostImage[];
 
-  @CreateDateColumn({ type: 'datetime', default: () => 'GETDATE()' })
-  created_at: Date;
+  @CreateDateColumn({ type: 'datetime', precision: 6, default: () => 'CURRENT_TIMESTAMP(6)' })
+  created_at: Date;  
 
   @Column({ type: 'datetime', nullable: false })
   expires_at: Date;

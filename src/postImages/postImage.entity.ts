@@ -25,6 +25,8 @@ export class PostImage {
   @Column({ type: 'text', nullable: false }) // Use 'text' for base64 image string
   image_url: string; // Storing the base64 string here
 
-  @CreateDateColumn({ type: 'datetime', default: () => 'GETDATE()' })
+  @CreateDateColumn({ type: 'datetime', precision: 6, default: () => 'CURRENT_TIMESTAMP(6)' })
   uploaded_at: Date;
+  
+  
 }

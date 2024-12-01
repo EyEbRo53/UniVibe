@@ -33,7 +33,7 @@ export class User {
   @Column({ type: 'varchar', length: 255, nullable: true })
   oauth_id: string | null;
 
-  @CreateDateColumn({ type: 'datetime', default: () => 'GETDATE()' })
+  @CreateDateColumn({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP(6)' })
   created_at: Date;
 
   @OneToMany(() => UserContacts, (userContacts) => userContacts.user)

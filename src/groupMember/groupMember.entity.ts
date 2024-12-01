@@ -35,9 +35,10 @@ export class GroupMembership {
   @CreateDateColumn({
     name: 'joined_at',
     type: 'datetime',
-    default: () => 'CURRENT_TIMESTAMP',
+    default: () => 'CURRENT_TIMESTAMP(6)', // Correct default format for datetime(6)
   })
   joined_at: Date;
+  
 
   @Column({
     type: 'varchar', // Change to varchar

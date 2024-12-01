@@ -17,7 +17,7 @@ export class Message {
   @Column('text')
   content: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP(6)' })
   sent_at: Date;
 
   @Column({ type: 'datetime' })
