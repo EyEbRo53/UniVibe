@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/appPages/createpost.dart';
-import 'package:frontend/appPages/homepage.dart';
+import 'package:frontend/appPages/create_post.dart';
+import 'package:frontend/appPages/home_page.dart';
 import 'package:frontend/appPages/dm.dart';
+import 'package:frontend/appPages/profile_page.dart';
 
 class PageCard extends StatefulWidget {
   const PageCard({super.key});
@@ -42,18 +43,17 @@ class _PageCardState extends State<PageCard> {
       case "Create Post":
         return const CreatePostPage();
       case "Messages":
-        return  ChatScreen();
+        return ChatScreen();
       case "Notifications":
         return const Center(
-            child: Text("Notifications Page", style: TextStyle(fontSize: 24)));
+            child: Text("Notification Page", style: TextStyle(fontSize: 24)));
       case "Activities":
         return const Center(
             child: Text("Activities Page", style: TextStyle(fontSize: 24)));
       case "Profile":
-        return const Center(
-            child: Text("Profile Page", style: TextStyle(fontSize: 24)));
+        return const ProfilePage();
       default:
-        return Homepage();
+        return const Homepage();
     }
   }
 

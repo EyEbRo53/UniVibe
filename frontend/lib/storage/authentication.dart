@@ -21,6 +21,10 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> logout() async {
+    await clearToken();
+  }
+
   Future<void> loadToken() async {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('auth_token') ?? '';

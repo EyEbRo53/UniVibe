@@ -68,16 +68,8 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
   }
 
   Future<void> _saveContacts() async {
-    // Display saved contacts
-    // print("\nHere are the type value pair\n");
-    // print(_selectedTypes);
-    // print(_contactValues);
-    // print("\n\n");
-
-    // Ensure that the contact types and values are not empty
     if (_selectedTypes.isEmpty || _contactValues.isEmpty) {
       _errroMessage = "Contact types or values cannot be empty.";
-      //print("Error: Contact types or values cannot be empty.");
       return;
     }
 
@@ -229,9 +221,11 @@ class _ContactInfoPageState extends State<ContactInfoPage> {
                   ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min, 
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(width: 320,),
+                    const SizedBox(
+                      width: 320,
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(top: 10),
                       child: TextButton(
