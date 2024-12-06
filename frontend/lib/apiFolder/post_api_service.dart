@@ -31,4 +31,50 @@ class PostApiService {
       throw Exception(responseBody['message'] ?? 'Unknown error occurred');
     }
   }
+
+  Future<Map<String, dynamic>> createPost(
+    String title,
+    String description,
+    String location,
+    int activityTypeId,
+    List imageUrls,
+    BuildContext context,
+  ) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    String jwtToken = authProvider.token;
+    jwtToken = "Bearer $jwtToken";
+
+    Uri url = Uri.parse("$baseUrl/posts/create");
+
+    // Prepare the request body
+    final Map<String, dynamic> requestBody = {
+      'title': title,
+      'description': description,
+      'location': location,
+      'activityTypeId': activityTypeId,
+      'imageUrls': imageUrls,
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': jwtToken,
+          'Content-Type': 'application/json'
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      // Check if the status code indicates success
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+        return responseBody; // Return success message from the response
+      } else {
+        final responseBody = json.decode(response.body);
+        throw Exception(responseBody['message'] ?? 'Failed to create post');
+      }
+    } catch (e) {
+      throw Exception('Error creating post: $e');
+    }
+  }
 }

@@ -100,29 +100,52 @@ class ProfileApiService {
   }
 
   /// Replace a contact's information
-  Future<http.Response> replaceContactInfo(String authToken, int contactId,
-      String contactType, String contactValue) async {
-    final url = Uri.parse('$baseUrl/contacts/replace-contact');
+  Future<Map<String, dynamic>> replaceContactInfo(String authToken,
+      int contactId, String contactType, String contactValue) async {
+    const replaceContactPath = '/contacts/replace-contact';
+    final url = Uri.parse('$baseUrl$replaceContactPath');
 
-    final response = await http.put(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $authToken',
-      },
-      body: jsonEncode({
-        'contact_id': contactId,
-        'contact_type': contactType,
-        'contact_value': contactValue,
-      }),
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception(
-          'Failed to replace contact info: ${response.statusCode} ${response.body}');
+    // Validate input
+    if (authToken.isEmpty) {
+      throw Exception('Authorization token is missing.');
+    }
+    if (contactType.isEmpty || contactValue.isEmpty) {
+      throw Exception('Contact type and value cannot be empty.');
     }
 
-    return response;
+    try {
+      final response = await http
+          .put(
+        url,
+        headers: {
+          'Authorization': 'Bearer $authToken',
+        },
+        body: jsonEncode({
+          'contact_id': contactId,
+          'contact_type': contactType,
+          'contact_value': contactValue,
+        }),
+      )
+          .timeout(const Duration(seconds: 10), onTimeout: () {
+        throw Exception('Request timed out. Please try again.');
+      });
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        String errorMessage = 'Failed to replace contact info. ';
+        try {
+          final responseBody = jsonDecode(response.body);
+          errorMessage += responseBody['message'] ?? response.body;
+        } catch (e) {
+          errorMessage += 'No detailed error provided.';
+        }
+        throw Exception('$errorMessage (Status Code: ${response.statusCode})');
+      }
+    } catch (e) {
+      print('Error in replaceContactInfo: $e');
+      rethrow;
+    }
   }
 
   /// Delete a contact

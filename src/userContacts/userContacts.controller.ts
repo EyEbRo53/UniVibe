@@ -16,6 +16,7 @@ import {
   Put,
   HttpCode,
   Query,
+  InternalServerErrorException,
 } from '@nestjs/common';
 
 import { UserContacts } from './userContacts.entity';
@@ -91,18 +92,20 @@ export class UserContactController {
       req.headers['authorization'],
     );
 
-    if (!contact_type || !contact_value || !contact_id)
-      throw new BadRequestException('Parameters are invalid');
-    const result = await this.contactsService.replaceContact(
-      user.user_id,
-      contact_id,
-      contact_type,
-      contact_value,
-    );
-
-    return {
-      message: 'Contact updated Successfully',
-    };
+    try {
+      const result = await this.contactsService.replaceContact(
+        user.user_id,
+        contact_id,
+        contact_type,
+        contact_value,
+      );
+      return {
+        message: 'Contact updated successfully',
+      };
+    } catch (e) {
+      console.error('Error while replacing contact:', e);  // Log the error for debugging
+      throw new InternalServerErrorException('An error occurred while updating the contact.');
+    }
   }
   @UseGuards(JwtAuthGuard)
   @Delete('/delete-contact')

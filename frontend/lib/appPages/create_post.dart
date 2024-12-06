@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/apiFolder/api_service.dart'; // Import PostApiService
+import 'package:frontend/apiFolder/post_api_service.dart';
+import 'package:frontend/storage/authentication.dart'; // Assuming you have AuthProvider
+import 'package:provider/provider.dart'; // To access AuthProvider
 
 class CreatePostPage extends StatefulWidget {
   const CreatePostPage({super.key});
@@ -45,7 +49,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
     }
   }
 
-  void _createPost() {
+  // Function to actually create the post by calling the API
+  Future<void> _createPost() async {
     if (_titleController.text.isEmpty || _descriptionController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Title and Description are required.")),
@@ -55,19 +60,48 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
     setState(() => _isLoading = true);
 
-    // Simulate a delay for loading indicator
-    Future.delayed(const Duration(seconds: 2), () {
+    try {
+      final postApiService = PostApiService("http://localhost:3000");
+
+      final title = _titleController.text;
+      final description = _descriptionController.text;
+      final location = _locationController.text;
+      final activityTypeId = _tags.isNotEmpty
+          ? 1
+          : 0; // Assuming default activity type 1 if any tag exists
+      final imageUrls = []; // Attachments can be added here if available
+
+      // Call the API to create the post
+      final response = await postApiService.createPost(
+        title,
+        description,
+        location,
+        activityTypeId,
+        imageUrls,
+        context,
+      );
+
+      // Handle the successful response
+      setState(() => _isLoading = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text("Post created successfully: ${response['message']}")),
+      );
+    } catch (e) {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Post Created: ${_titleController.text}")),
+        SnackBar(content: Text('Failed to create post: $e')),
       );
-    });
+    }
   }
-  int widthThreshold=1000;
+
+  int widthThreshold = 1000;
+
   @override
   Widget build(BuildContext context) {
-  double screenWidth=MediaQuery.of(context).size.width;
-  double paddingAmt= screenWidth<widthThreshold?40:120;
+    double screenWidth = MediaQuery.of(context).size.width;
+    double paddingAmt = screenWidth < widthThreshold ? 40 : 120;
 
     return Scaffold(
       appBar: AppBar(
@@ -83,7 +117,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   const Text("Activity Details", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text("Activity Details",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
 
                   // Title
@@ -112,7 +148,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
                   const SizedBox(height: 16),
 
                   // Activity Type
-                  const Text("Activity Type", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text("Activity Type",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _activityTypeController,
@@ -135,7 +173,8 @@ class _CreatePostPageState extends State<CreatePostPage> {
                     spacing: 8,
                     children: _tags.map((tag) {
                       return Chip(
-                        label: Text(tag, style: const TextStyle(color: Colors.white)),
+                        label: Text(tag,
+                            style: const TextStyle(color: Colors.white)),
                         backgroundColor: Colors.deepPurple,
                         deleteIconColor: Colors.white,
                         deleteIcon: const Icon(Icons.close),
@@ -161,12 +200,15 @@ class _CreatePostPageState extends State<CreatePostPage> {
                   const SizedBox(height: 16),
 
                   // Expiry Date Picker
-                  const Text("Expiry Date", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text("Expiry Date",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
-                        child: Text(_expiryDate ?? "No date selected", style: const TextStyle(fontSize: 16)),
+                        child: Text(_expiryDate ?? "No date selected",
+                            style: const TextStyle(fontSize: 16)),
                       ),
                       ElevatedButton(
                         onPressed: _pickExpiryDate,
@@ -177,7 +219,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
                   const SizedBox(height: 16),
 
                   // Attachments Section Placeholder
-                  const Text("Attachments", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text("Attachments",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   const Row(
                     children: [
@@ -199,8 +243,10 @@ class _CreatePostPageState extends State<CreatePostPage> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _createPost,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _isLoading ? Colors.grey : Colors.deepPurple,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    backgroundColor:
+                        _isLoading ? Colors.grey : Colors.deepPurple,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),

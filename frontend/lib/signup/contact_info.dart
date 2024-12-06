@@ -1,51 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:frontend/apiFolder/api_service.dart';
-import 'package:frontend/icons/my_icons.dart';
-import 'package:http/http.dart';
-
-List<DropdownMenuItem<String>> contactTypes = [
-  const DropdownMenuItem(
-    value: 'Phone Number',
-    child: Row(
-      children: [
-        Icon(Icons.phone),
-        SizedBox(width: 8),
-        Text("Phone Number"),
-      ],
-    ),
-  ),
-  DropdownMenuItem(
-    value: 'Whatsapp',
-    child: Row(
-      children: [
-        CustomIcons.whatsappIcon,
-        const SizedBox(width: 8),
-        const Text("Whatsapp"),
-      ],
-    ),
-  ),
-  DropdownMenuItem(
-    value: 'Instagram',
-    child: Row(
-      children: [
-        CustomIcons.instagramIcon,
-        const SizedBox(width: 8),
-        const Text("Instagram"),
-      ],
-    ),
-  ),
-  DropdownMenuItem(
-    value: 'X',
-    child: Row(
-      children: [
-        CustomIcons.xIcon,
-        const SizedBox(width: 8),
-        const Text("X"),
-      ],
-    ),
-  ),
-];
+import 'package:frontend/storage/authentication.dart'; // Replace with actual location
+import 'package:path/path.dart' as Path;
+import 'package:provider/provider.dart';
 
 class ContactInfoPage extends StatefulWidget {
   const ContactInfoPage({super.key});
@@ -55,264 +12,251 @@ class ContactInfoPage extends StatefulWidget {
 }
 
 class _ContactInfoPageState extends State<ContactInfoPage> {
-  String _errroMessage = "";
+  late ApiService apiService;
+  final _formKey = GlobalKey<FormState>(); // Main form key
+  final _dialogFormKey = GlobalKey<FormState>(); // Dialog form key (new)
 
-  final List<String> _selectedTypes = [];
-  final List<String> _contactValues = [];
+  final TextEditingController contactTypeController = TextEditingController();
+  final TextEditingController contactValueController = TextEditingController();
+  List<Map<String, dynamic>> contacts = [];
 
-  void _addContactRow() {
-    setState(() {
-      _selectedTypes.add('');
-      _contactValues.add('');
-    });
-  }
+  bool isLoading = false;
 
-  Future<void> _saveContacts() async {
-    if (_selectedTypes.isEmpty || _contactValues.isEmpty) {
-      _errroMessage = "Contact types or values cannot be empty.";
-      return;
-    }
-
-    ApiService apiService = ApiService("http://localhost:3000");
-
+  Future<void> _loadContacts(String authToken) async {
+    setState(() => isLoading = true);
     try {
-      Response response = await apiService.addUserContacts(
-          context, _selectedTypes, _contactValues);
-      dynamic body = json.decode(response.body);
-      String message = body['message'];
-      print(message);
-      if (response.statusCode == 201) {
-        _errroMessage = "";
-        //Positive
-      } else if (response.statusCode == 400) {
-        _errroMessage = message;
-        //Bad Request
-      } else if (response.statusCode == 409) {
-        _errroMessage = message;
-        //Conflict Exception
-      }
+      final fetchedContacts = await apiService.getContactInfo(authToken);
+      setState(() => contacts = fetchedContacts);
     } catch (e) {
-      // Handle any errors from the API call
-      _errroMessage = "Unknown Error occured";
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to fetch contacts: $e')),
+      );
+    } finally {
+      setState(() => isLoading = false);
     }
-    setState(() {});
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Card(
-          margin: const EdgeInsets.symmetric(vertical: 50),
-          shadowColor: Colors.black,
-          elevation: 100,
-          shape: RoundedRectangleBorder(
-            side: const BorderSide(width: 1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(
-                  width: 300,
-                  child: Text(
-                    "Enter Contact Information",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const SizedBox(
-                  width: 400,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      SizedBox(
-                        width: 168,
-                        child: Text(
-                          "Contact Type",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 200,
-                        child: Text(
-                          "Contact Value",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Flexible(
-                  child: SizedBox(
-                    width: 420,
-                    child: ListView.builder(
-                      itemCount: _selectedTypes.length,
-                      itemBuilder: (context, index) {
-                        return ContactRow(
-                          index: index,
-                          onChanged: (type, value) {
-                            _selectedTypes[index] = type;
-                            _contactValues[index] = value;
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 18),
-                    textStyle: const TextStyle(fontSize: 16),
-                    backgroundColor: Colors.black,
-                    shadowColor: Colors.black,
-                  ),
-                  onPressed: _addContactRow,
-                  child: const Text(
-                    "Add Another Contact",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 18),
-                    textStyle: const TextStyle(fontSize: 16),
-                    backgroundColor: Colors.black,
-                    shadowColor: Colors.black,
-                  ),
-                  onPressed: _saveContacts,
-                  child: const Text(
-                    "Save Contacts",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-                const SizedBox(
-                  height: 8,
-                ),
-                if (_errroMessage.isNotEmpty)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.warning,
-                        color: Colors.red,
-                      ),
-                      Text(
-                        _errroMessage,
-                        style: const TextStyle(color: Colors.red),
-                      )
-                    ],
-                  ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(
-                      width: 320,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: TextButton(
-                        iconAlignment: IconAlignment.end,
-                        onPressed: () {},
-                        child: const Text(
-                          "Skip This",
-                          style: TextStyle(color: Colors.lightBlue),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+  Future<void> _addContact(String authToken) async {
+    if (_formKey.currentState!.validate()) {
+      final contact = {
+        'contact_type': contactTypeController.text.trim(),
+        'contact_value': contactValueController.text.trim(),
+      };
+      setState(() => isLoading = true);
+      try {
+        await apiService.saveContactInfo(authToken, [contact]);
+        await _loadContacts(authToken); // Reload contacts after adding
+        contactTypeController.clear();
+        contactValueController.clear();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Contact added successfully!')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add contact: $e')),
+        );
+      } finally {
+        setState(() => isLoading = false);
+      }
+    }
   }
-}
 
-class ContactRow extends StatefulWidget {
-  final int index;
-  final Function(String, String) onChanged;
+  Future<void> _deleteContact(String authToken, int contactId) async {
+    setState(() => isLoading = true);
+    try {
+      await apiService.deleteContact(authToken, contactId);
+      await _loadContacts(authToken); // Reload contacts after deletion
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Contact deleted successfully!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete contact: $e')),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
 
-  const ContactRow({required this.index, required this.onChanged, super.key});
+  // Future<void> _replaceContact(String authToken, int contactId) async {
+  //   if (_formKey.currentState!.validate()) {
+  //     final contactType = contactTypeController.text.trim();
+  //     final contactValue = contactValueController.text.trim();
 
-  @override
-  State<ContactRow> createState() => _ContactRowState();
-}
+  //     print("Inside replace contact function, contactId: $contactId");
+  //     setState(() => isLoading = true);
+  //     try {
+  //       // Ensure contactId is an integer
+  //       await apiService.replaceContactInfo(
+  //         authToken,
+  //         contactId, // contactId should be an integer
+  //         contactType,
+  //         contactValue,
+  //       );
+  //       await _loadContacts(authToken); // Reload contacts after replacement
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text('Contact replaced successfully!')),
+  //       );
+  //     } catch (e) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text('Failed to replace contact: $e')),
+  //       );
+  //     } finally {
+  //       setState(() => isLoading = false);
+  //     }
+  //   } else {
+  //     print("not valid key.");
+  //   }
+  // }
 
-class _ContactRowState extends State<ContactRow> {
-  String? selectedContactType;
-  final TextEditingController _valueController = TextEditingController();
+  // void _showEditDialog(String authToken, Map<String, dynamic> contact) {
+  //   contactTypeController.text = contact['contact_type'];
+  //   contactValueController.text = contact['contact_value'];
+
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) {
+  //       return AlertDialog(
+  //         title: const Text('Edit Contact'),
+  //         content: Form(
+  //           key: _dialogFormKey, // Use dialog-specific key
+  //           child: Column(
+  //             mainAxisSize: MainAxisSize.min,
+  //             children: [
+  //               TextFormField(
+  //                 controller: contactTypeController,
+  //                 decoration: const InputDecoration(labelText: 'Type'),
+  //                 validator: (value) => value!.isEmpty ? 'Required' : null,
+  //               ),
+  //               TextFormField(
+  //                 controller: contactValueController,
+  //                 decoration: const InputDecoration(labelText: 'Value'),
+  //                 validator: (value) => value!.isEmpty ? 'Required' : null,
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.of(context).pop(),
+  //             child: const Text('Cancel'),
+  //           ),
+  //           ElevatedButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //               _replaceContact(authToken, contact['contact_id']);
+  //             },
+  //             child: const Text('Save'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   void initState() {
     super.initState();
-    _valueController.addListener(() {
-      widget.onChanged(selectedContactType ?? '', _valueController.text);
-    });
+    apiService = ApiService('http://localhost:3000');
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authToken = authProvider.token;
+    _loadContacts(authToken);
+  }
+
+  void _onConfirmPressed() {
+    // Navigate to '/page_card'
+    Navigator.pushNamed(context, '/page card');
   }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Container(
-          width: 168,
-          height: 50,
-          decoration: BoxDecoration(
-            border: Border.all(width: 1),
-            borderRadius: const BorderRadius.all(Radius.circular(5)),
-          ),
-          child: DropdownButton<String>(
-            borderRadius: const BorderRadius.all(Radius.circular(5)),
-            items: contactTypes,
-            value: selectedContactType,
-            hint: const Text('Select Type'),
-            onChanged: (String? type) {
-              if (type != null) {
-                setState(() {
-                  selectedContactType = type;
-                  widget.onChanged(selectedContactType!, _valueController.text);
-                });
-              }
-            },
-          ),
-        ),
-        SizedBox(
-          width: 200,
-          height: 50,
-          child: TextField(
-            controller: _valueController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(5)),
-                borderSide: BorderSide(width: 1),
-              ),
-              labelText: "Contact Value",
-            ),
-          ),
-        ),
-      ],
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authToken = authProvider.token;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Manage Contacts')),
+      body: authToken == null
+          ? const Center(child: Text('Please log in to manage contacts.'))
+          : isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Form(
+                        key: _formKey,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: contactTypeController,
+                                decoration:
+                                    const InputDecoration(labelText: 'Type'),
+                                validator: (value) =>
+                                    value!.isEmpty ? 'Required' : null,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: TextFormField(
+                                controller: contactValueController,
+                                decoration:
+                                    const InputDecoration(labelText: 'Value'),
+                                validator: (value) =>
+                                    value!.isEmpty ? 'Required' : null,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            ElevatedButton(
+                              onPressed: () => _addContact(authToken),
+                              child: const Text('Add'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: contacts.isEmpty
+                            ? const Center(child: Text('No contacts found.'))
+                            : ListView.builder(
+                                itemCount: contacts.length,
+                                itemBuilder: (context, index) {
+                                  final contact = contacts[index];
+                                  return ListTile(
+                                    title: Text(contact['contact_type']),
+                                    subtitle: Text(contact['contact_value']),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // IconButton(
+                                        //   icon: const Icon(Icons.edit),
+                                        //   onPressed: () => _showEditDialog(
+                                        //       authToken, contact),
+                                        // ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete),
+                                          onPressed: () => _deleteContact(
+                                            authToken,
+                                            int.parse(contact['contact_id']),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: ElevatedButton(
+                          onPressed:
+                              _onConfirmPressed, // Navigate to '/page_card'
+                          child: const Text('Confirm'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
     );
   }
 }
