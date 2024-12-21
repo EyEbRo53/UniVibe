@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:frontend/apiFolder/api_service.dart';
 import 'package:frontend/signup/contact_info.dart';
 import 'package:frontend/signup/login.dart';
+import 'package:frontend/storage/authentication.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 
 class SignupUsername extends StatefulWidget {
   final String email;
@@ -34,17 +37,16 @@ class _SignupUsernameState extends State<SignupUsername> {
           },
         );
         if (response.statusCode == 201) {
-          //final authProvider = Provider.of<AuthProvider>(context, listen: false);
+          // final authProvider =
+          //     Provider.of<AuthProvider>(context, listen: false);
           // ApiService apiService = ApiService("http://localhost:3000");
-          // authProvider.setToken("");
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ContactInfoPage()),
-          );
+          // apiService.login(email, password);
+          Navigator.pushNamed(context, '/');
         } else {
           final decodedResponse = jsonDecode(response.body); // Decode JSON body
           setState(() {
-            _errorMessage = decodedResponse['message'] ?? 'Unknown error occurred';
+            _errorMessage =
+                decodedResponse['message'] ?? 'Unknown error occurred';
           });
         }
       } catch (error) {
@@ -134,8 +136,8 @@ class SuccessPage extends StatelessWidget {
             const SizedBox(height: 20),
             TextButton(
               onPressed: () {
-                Navigator.pushReplacement(
-                    context, MaterialPageRoute(builder: (context) => const LoginPage()));
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()));
               },
               child: const Text(
                 "Go to Home Page",

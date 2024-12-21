@@ -22,7 +22,7 @@ class _HomepageState extends State<Homepage> {
   Future<List<dynamic>> getAllPosts() async {
     PostApiService postApiService = PostApiService("http://localhost:3000");
     try {
-      var postResponse = jsonDecode(await postApiService.getAllPosts());
+      var postResponse = jsonDecode(await postApiService.getAllPosts(context));
       return postResponse['data']; // Return the list of posts.
     } catch (e) {
       print("Could not get posts: $e");

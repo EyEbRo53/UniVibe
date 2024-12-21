@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/appPages/create_post.dart';
 import 'package:frontend/appPages/home_page.dart';
 import 'package:frontend/appPages/dm.dart';
+import 'package:frontend/appPages/notif_page.dart';
 import 'package:frontend/appPages/profile_page.dart';
 
 class PageCard extends StatefulWidget {
@@ -45,8 +46,7 @@ class _PageCardState extends State<PageCard> {
       case "Messages":
         return ChatScreen();
       case "Notifications":
-        return const Center(
-            child: Text("Notification Page", style: TextStyle(fontSize: 24)));
+        return NotificationsPage();
       case "Activities":
         return const Center(
             child: Text("Activities Page", style: TextStyle(fontSize: 24)));

@@ -1,5 +1,8 @@
 const socket = io('http://localhost:3000'); // Replace with your server URL
 
+callbackhell
+closure
+
 // When the socket connects
 socket.on('connect', () => {
   console.log(`Connected with socket ID: ${socket.id}`);

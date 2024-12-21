@@ -110,7 +110,7 @@ class _DMListScreenState extends State<DMListScreen> {
   Future<List<dynamic>> getAllChats() async {
     ChatApiService chatApiService = ChatApiService("http://localhost:3000");
     try {
-      var postResponse = await chatApiService.getAllChats();
+      var postResponse = await chatApiService.getAllChats(context);
       print(postResponse);
       return postResponse;
     } catch (e) {
@@ -190,7 +190,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   Future<List<dynamic>> getMessages() async {
     ChatApiService chatApiService = ChatApiService("http://localhost:3000");
     try {
-      final response = await chatApiService.getMessages(widget.userId);
+      final response = await chatApiService.getMessages(widget.userId, context);
       print("Messages for user ${widget.userId}: $response");
       return response;
     } catch (e) {

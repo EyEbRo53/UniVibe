@@ -14,9 +14,8 @@ class ChatApiService {
 
   final baseHeaders = {'Content-Type': 'application/json'};
 
-  Future<dynamic> getAllChats() async {
-    final authProvider =
-        Provider.of<AuthProvider>(context as BuildContext, listen: false);
+  Future<dynamic> getAllChats(BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     String jwtToken = authProvider.token;
     Uri uri = Uri.parse("$baseUrl/chat/get-chats");
@@ -39,9 +38,8 @@ class ChatApiService {
     }
   }
 
-  Future<dynamic> getMessages(int userId) async {
-    final authProvider =
-        Provider.of<AuthProvider>(context as BuildContext, listen: false);
+  Future<dynamic> getMessages(int userId, BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     String jwtToken = authProvider.token;
 

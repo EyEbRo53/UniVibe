@@ -4,7 +4,7 @@ import 'package:frontend/apiFolder/api_service.dart';
 import 'package:frontend/storage/authentication.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as Path;
 import 'package:provider/provider.dart';
 
 class PostApiService {
@@ -13,10 +13,9 @@ class PostApiService {
   PostApiService(this.baseUrl);
   final base_headers = {'Content-Type': 'application/json'};
 
-  Future<dynamic> getAllPosts() async {
+  Future<dynamic> getAllPosts(BuildContext context) async {
     ApiService apiService = ApiService("http://localhost:3000");
-    final authProvider =
-        Provider.of<AuthProvider>(context as BuildContext, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     String jwtToken = authProvider.token;
     jwtToken = "Bearer $jwtToken";
     Uri url = Uri.parse("$baseUrl/posts/all");
